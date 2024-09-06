@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic-Modern Fusion Clock with Animation</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #dcdcdc; /* Light brushed metal wall background */
+            margin: 0;
+        }
+
+        .clock {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background-color: #1c1c1c; /* Matte black clock face */
+            border-radius: 50%;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3); /* Soft shadow for depth */
+            border: 10px solid #c0c0c0ad; /* Brushed metallic silver border */
+        }
+
+        .marker {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #c0c0c0; /* Default brushed silver finish */
+            border-radius: 50%;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.4); /* Shadow for 3D effect */
+            transform: translate(-50%, -50%);
+        }
+
+        .hour-number {
+            position: absolute;
+            font-size: 30px;
+            color: #e5e5e5; /* Brushed metallic silver for Roman numerals */
+            font-family: 'Times New Roman', serif; /* Classic Roman font */
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5); /* Soft shadow for depth */
+            transform: translate(-50%, -50%);
+        }
+
+        .digital-time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #e5e5e5; /* Silver digital time */
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3); /* Soft shadow for contrast */
+        }
+
+        /* Hour Marker - Bright Red */
+        .hour-marker {
+            background-color: #ff0000; /* Bright red for the current hour */
+            box-shadow: 0px 5px 10px rgba(255, 0, 0, 0.7); /* Strong glow effect */
+            width: 20px;  /* Larger size for hour marker */
+            height: 20px;
+        }
+
+        /* Minute Marker - White with pulsing animation */
+        .minute-marker {
+            background-color: #3246ffc2; /* White for the minute marker */
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.733); /* Soft glow */
+            animation: pulse 2s infinite; /* Pulsing effect */
+            width: 15px;  /* Smaller size for minute marker */
+            height: 15px;
+        }
+
+        /* Keyframes for pulsing effect */
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Roman numerals for 12, 3, 6, 9 */
+        .roman {
+            font-size: 28px;
+            font-family: 'Times New Roman', serif;
+            color: #f0f0f0; /* Metallic white for Roman numerals */
+        }
+    </style>
+</head>
+<body>
+    <div class="clock" id="clock">
+        <!-- <div class="digital-time" id="digitalTime">12:00</div> -->
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const clock = document.getElementById('clock');
+        const digitalTime = document.getElementById('digitalTime');
+        const totalMarkers = 12; // 12 hours on the clock
+        const radius = 150; // Radius of the clock face for markers
+        const numberRadius = 120; // Radius for the hour numbers
+
+        // Function to create markers around the clock
+        function createMarkers() {
+            for (let i = 0; i < totalMarkers; i++) {
+                const angle = ((i - 3) / totalMarkers) * 2 * Math.PI; // Adjusted angle to align 12 on top
+                const xMarker = 200 + radius * Math.cos(angle);
+                const yMarker = 200 + radius * Math.sin(angle);
+                
+                const marker = document.createElement('div');
+                marker.classList.add('marker');
+                marker.style.left = `${xMarker}px`;
+                marker.style.top = `${yMarker}px`;
+                marker.setAttribute('data-hour', i + 1);
+                clock.appendChild(marker);
+
+                // Add Roman numerals only for 12, 3, 6, and 9
+                const xNumber = 200 + numberRadius * Math.cos(angle);
+                const yNumber = 200 + numberRadius * Math.sin(angle);
+
+                const hourNumber = document.createElement('div');
+                hourNumber.classList.add('hour-number');
+                hourNumber.style.left = `${xNumber}px`;
+                hourNumber.style.top = `${yNumber}px`;
+
+                // Use Roman numerals for 12, 3, 6, and 9
+                if (i === 0) {
+                    hourNumber.textContent = '12'; // 12 / XII
+                } else if (i === 3) {
+                    hourNumber.textContent = '3';  // 3 / III
+                } else if (i === 6) {
+                    hourNumber.textContent = '6';  // 6 / VI
+                } else if (i === 9) {
+                    hourNumber.textContent = '9';  // 9 / IX
+                } else {
+                    marker.style.width = "10px"; // Smaller markers for non-Roman numerals
+                    marker.style.height = "10px";
+                }
+
+                clock.appendChild(hourNumber);
+            }
+        }
+
+        // Function to update the clock based on the current time
+        function updateClock() {
+            const date = new Date();
+            let hours = date.getHours() % 12;
+            hours = hours === 0 ? 12 : hours;
+            let minutes = date.getMinutes();
+            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes; // Ensure 2-digit minute display
+
+            // Get all markers
+            const markers = document.querySelectorAll('.marker');
+
+            // Reset all markers
+            markers.forEach(marker => marker.classList.remove('hour-marker', 'minute-marker'));
+
+            const currentHour = hours;
+            let minuteMarker = Math.floor(minutes / 5); 
+
+            // Apply hour marker class
+            markers.forEach(marker => {
+                const hour = parseInt(marker.getAttribute('data-hour'));
+                if (hour === currentHour) {
+                    marker.classList.add('hour-marker'); // Apply hour marker style
+                }
+                if (hour === minuteMarker) {
+                    marker.classList.add('minute-marker'); // Apply minute marker style with pulsing
+                }
+            });
+
+            // Update the digital clock display
+            const displayHours = date.getHours();
+            const currentTime = displayHours + ":" + formattedMinutes;
+            digitalTime.textContent = currentTime;
+        }
+
+        // Create markers on the clock
+        createMarkers();
+
+        // Update the clock every minute
+        setInterval(updateClock, 60000);
+        updateClock(); // Initialize immediately
+    });
+
+    </script>
+    <!-- <script src="clock.js"></script> -->
+</body>
+</html>
